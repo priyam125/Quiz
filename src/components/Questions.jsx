@@ -1,69 +1,114 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import questions from "../utils/data";
 import "../index.css";
+import NextIcon from "../assets/Icons/NextIcon";
+import PreviousIcon from "../assets/Icons/PreviousIcon";
 
 const Questions = ({
   question,
   options,
-  handleAnswer,
   handleNext,
   handlePrev,
   currentQuestion,
+  selectedOption,
+  setSelectedOption,
+  answersChosen,
+  setAnswersChosen,
+  handleSubmit,
 }) => {
-  console.log(currentQuestion);
-  const [selectedOption, setSelectedOption] = useState("");
+ const handleChange = (event) => {
+    const selectedQuestionIndex = selectedOption.findIndex(
+      (obj) => obj.question === currentQuestion
+    );
 
-  const handleChange = (event) => {
-    setSelectedOption(event.target.value);
-  };
+    if (selectedQuestionIndex === -1) {
+      setSelectedOption([
+        ...selectedOption,
+        { question: currentQuestion, option: event.target.value },
+      ]);
+    } else {
+      const updatedSelectedOption = [...selectedOption];
+      updatedSelectedOption[selectedQuestionIndex].option = event.target.value;
+      setSelectedOption(updatedSelectedOption);
+    }
 
-  useEffect(() => {
-    window.console.log(selectedOption);
-  }, [selectedOption, currentQuestion]);
+    const { value } = event.target;
+    const newAnswer = { question: currentQuestion, answer: value };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    handleAnswer(selectedOption);
+    setAnswersChosen((prevAnswers) => {
+      const index = prevAnswers.findIndex(
+        (answer) => answer.question === currentQuestion
+      );
+
+      if (index === -1) {
+        return [...prevAnswers, newAnswer];
+      } else {
+        return prevAnswers.map((answer, i) => {
+          if (i === index) {
+            return newAnswer;
+          }
+          return answer;
+        });
+      }
+    });
   };
 
   return (
-    <div className="bg-red-500 mt-[24px]">
-      <div className="flex justify-between items-center mb-4">
-        <button onClick={handlePrev} disabled={currentQuestion === 0}>
-          Previous
-        </button>
+    <div className="mt-[24px]">
+      <div className="flex items-center justify-between mb-4 lg:px-8">
+        <span
+          onClick={handlePrev}
+          className={
+            currentQuestion === 0 ? "invisible" : "flex cursor-pointer"
+          }
+        >
+          <PreviousIcon width={51} height={51} />
+        </span>
         <div>
-          <span>{`Question #${currentQuestion + 1}`}</span>
+          <span className="text-lg font-semibold">{`Question #${
+            currentQuestion + 1
+          }`}</span>
           <h2>{question}</h2>
         </div>
-        <button
+        <span
           onClick={handleNext}
-          disabled={currentQuestion === questions.length - 1}
+          className={
+            currentQuestion === questions.length - 1
+              ? "invisible"
+              : "flex cursor-pointer"
+          }
         >
-          Next
-        </button>
+          <NextIcon width={51} height={51} />
+        </span>
       </div>
-      {/* <span>{`Question #${currentQuestion + 1}`}</span>
-      <h2>{question}</h2> */}
-      <div className="bg-green-400 flex justify-center">
+      <div className="flex flex-col items-center">
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col items-start space-y-2 justify-start"
+          className="flex flex-col items-start space-y-2"
         >
           {options.map((option, index) => (
-            <span key={index} className="justify-start bg-pink-400">
-              <label className="bg-green-800">
+            <span
+              key={index}
+              className="flex w-full bg-[#FFF9F6] pr-8 py-2 pl-2"
+            >
+              <label className="">
                 <input
                   type="radio"
                   value={option}
-                  checked={selectedOption === option}
+                  checked={selectedOption[currentQuestion]?.option == option}
                   onChange={handleChange}
+                  className="mr-4"
                 />
                 {option}
               </label>
             </span>
           ))}
-          <button type="submit">Submit</button>
+          <button
+            type="submit"
+            className="items-center p-2 px-4 mt-6 ml-2 bg-blue-400 rounded-md"
+          >
+            Submit
+          </button>
         </form>
       </div>
     </div>
